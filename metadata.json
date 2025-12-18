@@ -1,0 +1,5 @@
+{
+  "name": "Goh Music Site",
+  "description": "A powerful, mobile-friendly web application to process MP3 files with various audio effects including slowdown, speedup, and bass boost.",
+  "requestFramePermissions": []
+}
