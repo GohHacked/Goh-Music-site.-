@@ -7,10 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-      body {
+      body, html {
+        margin: 0;
+        padding: 0;
+        /* Set base color to dark blue to match the canvas and avoid white flash */
+        background-color: #020617; 
         font-family: 'Inter', sans-serif;
-        /* Background is handled by the Canvas component */
-        background-color: transparent; 
         color: white;
         overflow-x: hidden;
       }
@@ -35,7 +37,8 @@
         background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(59, 130, 246, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
       }
       
       /* Animations */
@@ -73,5 +76,7 @@
 </head>
   <body>
     <div id="root"></div>
+    <!-- CRITICAL: Entry point for Vite/React -->
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>
