@@ -6,7 +6,7 @@ const BackgroundVisualizer: React.FC = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false }); // Optimize for no transparency on canvas itself
     if (!ctx) return;
 
     let animationFrameId: number;
@@ -22,83 +22,66 @@ const BackgroundVisualizer: React.FC = () => {
     window.addEventListener('resize', resize);
     resize();
 
-    // Snowflakes configuration
-    // Increased count for better visibility
-    const isMobile = width < 768;
-    const snowflakeCount = isMobile ? 100 : 250;
+    // Configuration - Optimized for performance
+    // significantly reduced count to prevent lag on mobile
+    const particleCount = width < 768 ? 25 : 50; 
     
-    const snowflakes: {
-        x: number;
-        y: number;
-        radius: number;
-        density: number; // Fallspeed factor
-        opacity: number;
-        swayOffset: number;
-        swaySpeed: number;
+    const particles: {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      color: string;
+      alpha: number;
+      pulseSpeed: number;
     }[] = [];
 
-    // Initialize snowflakes
-    for (let i = 0; i < snowflakeCount; i++) {
-      snowflakes.push({
+    const colors = ['#7c3aed', '#db2777', '#2563eb', '#06b6d4']; // Violet, Pink, Blue, Cyan
+
+    // Initialize particles
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        radius: Math.random() * 2 + 1, // Size 1px to 3px
-        density: Math.random() * 1.5 + 0.5, // Speed
-        opacity: Math.random() * 0.6 + 0.2, // Opacity
-        swayOffset: Math.random() * Math.PI * 2,
-        swaySpeed: Math.random() * 0.02 + 0.005
+        vx: (Math.random() - 0.5) * 0.2, // Slower movement
+        vy: (Math.random() - 0.5) * 0.2,
+        size: Math.random() * 2 + 0.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: Math.random(),
+        pulseSpeed: 0.01 + Math.random() * 0.02
       });
     }
 
-    let angle = 0;
-
     const draw = () => {
-      // 1. Draw Background (Winter Night Gradient)
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, '#020617'); // Slate 950 (Top - Deep Space)
-      gradient.addColorStop(0.4, '#0f172a'); // Slate 900 (Middle)
-      gradient.addColorStop(1, '#172554'); // Blue 950 (Bottom - Deep Winter Blue)
-      ctx.fillStyle = gradient;
+      // Clear screen efficiently
+      ctx.fillStyle = '#030014'; // Solid background color instead of transparent clear
       ctx.fillRect(0, 0, width, height);
 
-      // 2. Global sway angle increment
-      angle += 0.01;
+      // Draw Particles
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
 
-      // 3. Draw Snowflakes
-      ctx.fillStyle = 'white'; // Set fill style once for performance
-      
-      for (let i = 0; i < snowflakeCount; i++) {
-        const flake = snowflakes[i];
+        // Wrap around screen
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
 
-        // Update positions
-        // Y movement: gravity + density
-        flake.y += Math.pow(flake.density, 2) + 0.3;
-        
-        // X movement: sway using sine wave
-        flake.x += Math.sin(angle * flake.swaySpeed + flake.swayOffset) * 0.5;
+        // Pulse effect
+        p.alpha += p.pulseSpeed;
+        if (p.alpha > 1 || p.alpha < 0.2) p.pulseSpeed *= -1;
+        const currentAlpha = Math.max(0.2, Math.min(1, p.alpha));
 
-        // Reset if out of view (Loop)
-        if (flake.y > height) {
-          flake.y = -5;
-          flake.x = Math.random() * width;
-        }
-
-        // Horizontal wrap
-        if (flake.x > width + 5) {
-            flake.x = -5;
-        } else if (flake.x < -5) {
-            flake.x = width + 5;
-        }
-
-        // Draw individual flake
-        ctx.globalAlpha = flake.opacity;
+        // Draw particle (simple circle)
         ctx.beginPath();
-        ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = currentAlpha;
         ctx.fill();
-      }
-      
-      // Reset alpha
-      ctx.globalAlpha = 1.0;
+        ctx.globalAlpha = 1.0;
+      });
 
       animationFrameId = requestAnimationFrame(draw);
     };
@@ -111,13 +94,10 @@ const BackgroundVisualizer: React.FC = () => {
     };
   }, []);
 
-  // Removed -z-10 and replaced with simple styling. 
-  // We rely on order in DOM or explicit z-index context in CSS if needed, 
-  // but fixed inset-0 with z-[-1] is standard for backgrounds.
   return (
     <canvas 
       ref={canvasRef} 
-      className="fixed top-0 left-0 w-full h-full"
+      className="fixed top-0 left-0 w-full h-full pointer-events-none"
       style={{ zIndex: -1 }}
     />
   );

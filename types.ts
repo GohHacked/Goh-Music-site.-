@@ -10,10 +10,12 @@ export enum EffectType {
   BASS_BOOST = 'Bass Boost',
   TREBLE_BOOST = 'Treble Boost',
   VOCAL_BOOST = 'Vocal Boost',
-  TELEPHONE = 'Telephone',
-  UNDERWATER = 'Underwater',
-  RADIO = 'Radio',
-  NIGHTCORE = 'Nightcore', // Pitch up + Speed up
+  EIGHT_D = '8D Audio',
+  REVERSE = 'Reverse',
+  ECHO = 'Echo / Delay',
+  LOFI = 'Lo-Fi Radio',
+  DISTORTION = 'Distortion',
+  NIGHTCORE = 'Nightcore',
 }
 
 export interface ProcessingState {
